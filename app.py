@@ -119,7 +119,7 @@ def about():
 def login():
     # If user is already logged in, redirect to home
     if current_user.is_authenticated:
-        return redirect('/')
+        return redirect(url_for('dashboard'))
     
     if request.method == "POST":
         username = request.form.get('username')
@@ -143,9 +143,7 @@ def login():
             login_user(user)
             flash('Login successful!', 'success')
             
-            # Redirect to next page if exists, otherwise home
-            next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect('/')
+            return redirect(url_for('dashboard'))
         else:
             flash('Incorrect username or password.', 'error')
     
@@ -196,10 +194,9 @@ def register():
 def logout():
     logout_user()
     flash('You have been logged out.', 'success')
-    return redirect('/login')
+    return redirect(url_for('home'))  
 
 
-# Protected route example
 @app.route('/dashboard')
 @login_required
 def dashboard():

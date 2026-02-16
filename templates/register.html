@@ -1,32 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Register - Thr1fter</title>
-    <style>
-        .error-message {
-            color: red;
-            font-size: 0.9em;
-            margin-top: 5px;
-            display: none;
-        }
-        .error-message.show {
-            display: block;
-        }
-        input.error {
-            border: 2px solid red;
-        }
-    </style>
-</head>
-<body>
+{% extends "layout.html" %}
+
+{% block body %}
     <h1>Register</h1>
-    
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
     
     <form method="POST" id="registerForm" onsubmit="return validateForm()">
         <div>
@@ -59,34 +34,28 @@
 
     <script>
         function validateForm() {
-            // Clear previous errors
             clearErrors();
-            
             let isValid = true;
             
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm_password').value;
             
-            // Validate username
             if (username.length < 3) {
                 showError('username', 'Username must be at least 3 characters long.');
                 isValid = false;
             }
             
-            // Validate password length
             if (password.length < 6) {
                 showError('password', 'Password must be at least 6 characters long.');
                 isValid = false;
             }
             
-            // Validate passwords match
             if (password !== confirmPassword) {
                 showError('confirmPassword', 'Passwords do not match.');
                 isValid = false;
             }
             
-            // Return false to prevent form submission if invalid
             return isValid;
         }
         
@@ -112,36 +81,5 @@
                 input.classList.remove('error');
             });
         }
-        
-        // Real-time validation as user types
-        document.getElementById('password').addEventListener('input', function() {
-            const password = this.value;
-            const errorDiv = document.getElementById('passwordError');
-            
-            if (password.length > 0 && password.length < 6) {
-                errorDiv.textContent = 'Password must be at least 6 characters long.';
-                errorDiv.classList.add('show');
-                this.classList.add('error');
-            } else {
-                errorDiv.classList.remove('show');
-                this.classList.remove('error');
-            }
-        });
-        
-        document.getElementById('confirm_password').addEventListener('input', function() {
-            const password = document.getElementById('password').value;
-            const confirmPassword = this.value;
-            const errorDiv = document.getElementById('confirmPasswordError');
-            
-            if (confirmPassword.length > 0 && password !== confirmPassword) {
-                errorDiv.textContent = 'Passwords do not match.';
-                errorDiv.classList.add('show');
-                this.classList.add('error');
-            } else {
-                errorDiv.classList.remove('show');
-                this.classList.remove('error');
-            }
-        });
     </script>
-</body>
-</html>
+{% endblock %}

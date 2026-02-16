@@ -1,15 +1,12 @@
 {% extends "layout.html" %}
+{% block body %}
 
-<body>
-    <h1>Welcome to Thr1fter</h1>
-</body>
+<h1>Welcome to Thr1fter</h1>
 
-<body>
-    <nav>
-        <a href="{{ url_for('about') }}">About</a>
-        <a href="{{ url_for('login') }}">Login</a>
-        <a href="{{ url_for('register') }}">Register</a>
-    </nav>
+<nav>
+    <a href="{{ url_for('about') }}">About</a>
+    <a href="{{ url_for('login') }}">Login</a>
+    <a href="{{ url_for('register') }}">Register</a>
+</nav>
 
-</body>
-</html>
+{% endblock %}
