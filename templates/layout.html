@@ -7,17 +7,38 @@
     <title>Thr1fter</title>
   </head>
   <body>
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        <ul class="flash-messages">
-            {% for category, message in messages %}
-            <li class="{{ category }}">{{message}}</li>
-            {% endfor %}
+    <!-- Only show nav if NOT on home, login, register, or about pages -->
+    {% if request.endpoint not in ['home', 'login', 'register', 'about'] %}
+    <header>
+      <nav class="navbar">
+        <div class="logo">
+          <a href="{{ url_for('home') }}">Thr1fter</a>
+          <li class="user-info">Hello, {{ current_user.username }}!</li>
+        </div>
+        
+        <ul class="nav-links">
+          <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+          <li><a href="{{ url_for('stores') }}">Stores</a></li>
+          <li><a href="{{ url_for('add_store') }}">Add Store</a></li>
+          <li><a href="{{ url_for('settings') }}">Settings</a></li>
+          <li><a href="{{ url_for('logout') }}">Logout</a></li>
         </ul>
-        {% endif %}
-        {% endwith %}
-            <div class="wrapper">
-          {% block body %}{% endblock %}
-        </div> 
+      </nav>
+    </header>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flash-messages">
+          {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    
+    <div class="wrapper">
+      {% block body %}{% endblock %}
+    </div> 
   </body>
 </html>

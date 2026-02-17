@@ -202,6 +202,21 @@ def logout():
 def dashboard():
     return render_template('dashboard.html', username=current_user.username)
 
+@app.route('/stores')
+@login_required
+def stores():
+    return render_template('stores.html', username=current_user.username)
+
+@app.route('/settings')
+@login_required
+def settings():
+    return render_template('settings.html', username=current_user.username)
+
+@app.route('/add_store')
+@login_required
+def add_store():
+    return render_template('add_store.html', username=current_user.username)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
