@@ -38,16 +38,34 @@
             let isValid = true;
             
             const username = document.getElementById('username').value;
+            const UserHasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(username);
             const password = document.getElementById('password').value;
+            const hasAlphanumeric = /[a-zA-Z0-9]/.test(password);
+            const PassHasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
             const confirmPassword = document.getElementById('confirm_password').value;
             
             if (username.length < 3) {
                 showError('username', 'Username must be at least 3 characters long.');
                 isValid = false;
             }
+
+            if (UserHasSymbol) {
+                showError('username', 'Username must only contain alphanumeric characters.');
+                isValid = false;
+            }
             
-            if (password.length < 6) {
-                showError('password', 'Password must be at least 6 characters long.');
+            if (password.length < 12) {
+                showError('password', 'Password must be at least 12 characters long.');
+                isValid = false;
+            }
+
+            if (hasAlphanumeric == false) {
+                showError('password', 'Password must have at least one number.');
+                isValid = false;
+            }
+            
+            if (PassHasSymbol == false) {
+                showError('password', 'Password must have at least one symbol.');
                 isValid = false;
             }
             

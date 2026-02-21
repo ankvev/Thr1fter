@@ -2,10 +2,22 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
+import os
+from dotenv import load_dotenv
+import bleach
 
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'hdukahkh2hj1jk2h31h2kj3h1kh'  # Change this in production!
+app.secret_key = os.getenv('SECRET_KEY')
+if not app.secret_key:
+    raise ValueError("ERROR: SECRET_KEY environment variable not found.")
+
+
+# Load API key from environment
+API_KEY = os.getenv('API_KEY', '')
+
 
 # Setup Flask-Login
 login_manager = LoginManager()
@@ -20,6 +32,12 @@ class User(UserMixin):
         self.id = id
         self.username = username
         self.email = email
+
+# Sanitise user input
+def sanitise_input(userInput : list):
+    for key in userInput.keys():
+        userInput[key] = bleach.clean(userInput[key])
+    return userInput
 
 
 # Flask-Login user loader
@@ -59,7 +77,7 @@ def init_db():
             address TEXT NOT NULL,
             city TEXT NOT NULL,
             state TEXT,
-            zip_code TEXT,
+            post_code TEXT,
             latitude REAL,
             longitude REAL,
             phone TEXT,
@@ -122,22 +140,26 @@ def login():
         return redirect(url_for('dashboard'))
     
     if request.method == "POST":
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
+        features = {
+        "username" : request.form.get('username'),
+        "password" : request.form.get('password')
+        }
+
+        features = sanitise_input(features)
+
         # Validate input
-        if not username or not password:
+        if not features["username"] or not features["password"]:
             flash('Please enter both username and password.', 'error')
             return render_template('login.html')
         
         conn = sqlite3.connect('thr1fter.db')
         cursor = conn.cursor()
-        cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+        cursor.execute('SELECT * FROM users WHERE username = ?', (features["username"],))
         user_data = cursor.fetchone()
         conn.close()
         
         # Check if user exists and password is correct
-        if user_data and check_password_hash(user_data[2], password):
+        if user_data and check_password_hash(user_data[2], features["password"]):
             # Create User object and log them in
             user = User(user_data[0], user_data[1], user_data[3])
             login_user(user)
@@ -156,32 +178,52 @@ def register():
         return redirect('/')
     
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        email = request.form.get('email')
+        features = {
+        "username" : request.form.get('username'),
+        "password" : request.form.get('password'),
+        "email" : request.form.get('email')
+        }
+
+        features = sanitise_input(features)
         
-        # Server-side validation (as backup - JavaScript can be disabled)
-        if len(username) < 3 or len(password) < 6:
-            flash('Invalid input. Please check your form.', 'error')
+        # Server-side validation
+        sym="!@#$%^&"
+        if len(features["password"]) < 12 or not ((features["password"]).isalnum()) or not any(symbol in features["password"] for symbol in sym):
+            flash('Invalid password input.', 'error')
             return render_template('register.html')
         
-        # Hash the password
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+        if len(features["username"]) < 3 or any(symbol in features["password"] for symbol in sym):
+            flash('Invalid username input', 'error')
+            return render_template('register.html')
+        
+        # Hash Password
+        hashed_password = generate_password_hash(features["password"], method='pbkdf2:sha256')
         
         conn = sqlite3.connect('thr1fter.db')
         cursor = conn.cursor()
         
+
         try:
-            cursor.execute(
-                'INSERT INTO users (username, password, email) VALUES (?, ?, ?)',
-                (username, hashed_password, email)
-            )
+            cursor.execute("SELECT * FROM users WHERE username = ?", (features["username"], ))
+            result = cursor.fetchone()
+            print(result)
+            if features["email"]:
+                cursor.execute(
+                    'INSERT INTO users (username, password, email) VALUES (?, ?, ?)',
+                    (features["username"], hashed_password, features["email"])
+                )
+            else:
+                cursor.execute(
+                    'INSERT INTO users (username, password) VALUES (?, ?)',
+                    (features["username"], hashed_password)
+                )
             conn.commit()
             flash('Registration successful! Please log in.', 'success')
             conn.close()
             return redirect('/login')
             
-        except sqlite3.IntegrityError:
+        except sqlite3.IntegrityError as e:
+            print(e)
             conn.close()
             flash('Username or email already exists.', 'error')
             return render_template('register.html')
@@ -205,17 +247,89 @@ def dashboard():
 @app.route('/stores')
 @login_required
 def stores():
-    return render_template('stores.html', username=current_user.username)
+    conn = sqlite3.connect('thr1fter.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM thrift_stores ORDER BY name')
+    stores_data = cursor.fetchall()
+    conn.close()
+    
+    # Convert to list of dictionaries for easier use in template
+    stores_list = []
+    for store in stores_data:
+        stores_list.append({
+            'id': store[0],
+            'name': store[1],
+            'address': store[2],
+            'phone': store[3],
+            'website': store[4],
+            'hours': store[5],
+            'description': store[6],
+            'added_by': store[7],
+        })
+    
+    return render_template('stores.html', stores=stores_list, username=current_user.username)
 
 @app.route('/settings')
 @login_required
 def settings():
     return render_template('settings.html', username=current_user.username)
 
-@app.route('/add_store')
+@app.route('/add_store', methods=['GET', 'POST'])
 @login_required
 def add_store():
-    return render_template('add_store.html', username=current_user.username)
+    if request.method == 'POST':
+
+        features = {
+        "name" : request.form.get('name'),
+        "address" : request.form.get('address'),
+        "city" : request.form.get('city'),
+        "state" : request.form.get('state'),
+        "post_code" : request.form.get('post_code'),
+        "latitude" : request.form.get('latitude'),
+        "longitude" : request.form.get('longitude'),
+        "phone" : request.form.get('phone'),
+        "website" : request.form.get('website'),
+        "hours" : request.form.get('hours'),
+        "description" : request.form.get('description')
+        }
+
+        features = sanitise_input(features)
+
+        # Validate required fields
+        if not features["name"] or not features["address"] or not features["city"]:
+            flash('Please fill in at least the store name, address, and city.', 'error')
+            return render_template('add_store.html', maps_api_key=API_KEY)
+        
+        # Convert coordinates to float
+        try:
+            lat = float(features["latitude"]) if features["latitude"] else None
+            lng = float(features["longitude"]) if features["longitude"] else None
+        except (ValueError, TypeError):
+            lat = None
+            lng = None
+        
+        conn = sqlite3.connect('thr1fter.db')
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute('''
+                INSERT INTO thrift_stores 
+                (name, address, city, state, post_code, latitude, longitude, 
+                 phone, website, hours, description, added_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (features["name"], features["address"], features["city"], features["state"], features["post_code"], lat, lng,
+                  features["phone"], features["website"], features["hours"], features["description"], current_user.id))
+            conn.commit()
+            flash('Store added successfully!', 'success')
+            conn.close()
+            return redirect(url_for('stores'))
+        except Exception as e:
+            conn.close()
+            flash(f'Error adding store: {str(e)}', 'error')
+            return render_template('add_store.html', maps_api_key=API_KEY)
+    
+    # Pass API key to template
+    return render_template('add_store.html', username=current_user.username, maps_api_key=API_KEY)
 
 
 if __name__ == '__main__':

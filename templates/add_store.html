@@ -1,6 +1,308 @@
 {% extends "layout.html" %}
+
 {% block body %}
+<div class="add-store-page">
+    <h1>Add a New Thrift Store</h1>
+    <p class="subtitle">Share your favorite thrift store with the community!</p>
 
+    <form method="POST" class="add-store-form" id="addStoreForm">
+        <div class="form-section">
+            <h2>Basic Information</h2>
+            
+            <div class="form-group">
+                <label for="name">Store Name *</label>
+                <input type="text" id="name" name="name" required placeholder="e.g., Goodwill Sydney">
+            </div>
+            
+            <div class="form-group">
+                <label for="address">Street Address *</label>
+                <input type="text" id="address" name="address" required placeholder="e.g., 123 George St">
+                <small>Start typing and select from suggestions, or click on the map below</small>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="city">City *</label>
+                    <input type="text" id="city" name="city" required placeholder="e.g., Sydney">
+                </div>
+                
+                <div class="form-group">
+                    <label for="state">State</label>
+                    <input type="text" id="state" name="state" placeholder="e.g., NSW">
+                </div>
+                
+                <div class="form-group">
+                    <label for="post_code">Post Code</label>
+                    <input type="text" id="post_code" name="post_code" placeholder="e.g., 2000">
+                </div>
+            </div>
+        </div>
 
+        <div class="form-section">
+            <h2>Location</h2>
+            <p class="map-instructions">Click on the map to set the exact location, or it will be auto-filled from your address.</p>
+            
+            <!-- Map Container – added explicit height -->
+            <div id="map" class="location-map" style="height: 400px; width: 100%; border: 1px solid #ddd;"></div>
+            
+            <!-- Hidden fields for coordinates -->
+            <input type="hidden" id="latitude" name="latitude">
+            <input type="hidden" id="longitude" name="longitude">
+            
+            <p class="location-status" id="locationStatus">No location selected yet</p>
+        </div>
 
+        <div class="form-section">
+            <h2>Contact Information</h2>
+            
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" placeholder="e.g., (02) 1234-5678">
+            </div>
+            
+            <div class="form-group">
+                <label for="website">Website</label>
+                <input type="url" id="website" name="website" placeholder="e.g., https://example.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="hours">Opening Hours</label>
+                <input type="text" id="hours" name="hours" placeholder="e.g., Mon-Fri 9AM-5PM, Sat 10AM-4PM">
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>Additional Details</h2>
+            
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="4" placeholder="Tell us about this store..."></textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Add Store</button>
+            <a href="{{ url_for('stores') }}" class="btn-cancel">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<!-- Load Google Maps JavaScript API -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{ maps_api_key }}&libraries=places&loading=async&callback=initMap" async defer></script>
+
+<script>
+// Global variables
+let map;
+let marker;
+let autocomplete;
+let geocoder;
+
+// Australia bounding box check (global so it can be used by placeMarker and click listener)
+function isInAustralia(lat, lng) {
+    return (
+        lat >= -44.0 &&
+        lat <= -9.0 &&
+        lng >= 113.0 &&
+        lng <= 154.0
+    );
+}
+
+function placeMarker(location) {
+    const lat = location.lat();
+    const lng = location.lng();
+
+    if (!isInAustralia(lat, lng)) {
+        alert("Location must be inside Australia.");
+        return;
+    }
+    
+    // Remove existing marker if any
+    if (marker) {
+        marker.setMap(null);
+    }
+    
+    // Place new marker
+    marker = new google.maps.Marker({
+        position: location,
+        map: map,
+        draggable: true,
+        animation: google.maps.Animation.DROP
+    });
+    
+    // Update form fields
+    document.getElementById('latitude').value = lat;
+    document.getElementById('longitude').value = lng;
+    
+    // Update status text
+    updateLocationStatus(lat, lng);
+    
+    // Handle marker drag
+    marker.addListener('dragend', (event) => {
+        const newLat = event.latLng.lat();
+        const newLng = event.latLng.lng();
+        document.getElementById('latitude').value = newLat;
+        document.getElementById('longitude').value = newLng;
+        updateLocationStatus(newLat, newLng);
+        reverseGeocode(event.latLng);
+    });
+}
+
+function geocodeAddress(address) {
+    geocoder.geocode({
+        address: address,
+        componentRestrictions: { country: "AU" }
+    }, (results, status) => {
+        if (status === 'OK') {
+            map.setCenter(results[0].geometry.location);
+            map.setZoom(15);
+            placeMarker(results[0].geometry.location);
+        } else {
+            console.log('Geocode failed: ' + status);
+        }
+    });
+}
+
+function reverseGeocode(location) {
+    geocoder.geocode({
+        location: location,
+        region: "AU"
+    }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+            fillInAddress(results[0].address_components);
+            document.getElementById('address').value = results[0].formatted_address;
+        }
+    });
+}
+
+function fillInAddress(components) {
+    const componentForm = {
+        street_number: 'short_name',
+        route: 'long_name',
+        locality: 'long_name',
+        administrative_area_level_1: 'short_name',
+        postal_code: 'short_name'
+    };
+    
+    let streetNumber = '';
+    let route = '';
+    
+    for (const component of components) {
+        const addressType = component.types[0];
+        if (componentForm[addressType]) {
+            const val = component[componentForm[addressType]];
+            if (addressType === 'street_number') streetNumber = val;
+            else if (addressType === 'route') route = val;
+            else if (addressType === 'locality') document.getElementById('city').value = val;
+            else if (addressType === 'administrative_area_level_1') document.getElementById('state').value = val;
+            else if (addressType === 'postal_code') document.getElementById('post_code').value = val;
+        }
+    }
+    
+    if (streetNumber && route) {
+        document.getElementById('address').value = streetNumber + ' ' + route;
+    }
+}
+
+function getFullAddress() {
+    const address = document.getElementById('address').value.trim();
+    const city = document.getElementById('city').value.trim();
+    const state = document.getElementById('state').value.trim();
+    const postCode = document.getElementById('post_code').value.trim();
+    
+    if (!address || !city) return null;
+    
+    return `${address}, ${city}${state ? ', ' + state : ''}${postCode ? ' ' + postCode : ''}`.trim();
+}
+
+function updateLocationStatus(lat, lng) {
+    document.getElementById('locationStatus').innerHTML = 
+        `✓ Location set: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    document.getElementById('locationStatus').style.color = '#27ae60';
+}
+
+window.initMap = function () {
+    const defaultCenter = { lat: -33.8688, lng: 151.2093 };
+    
+    map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 13,
+        center: defaultCenter,
+        mapTypeControl: true,
+        streetViewControl: false
+    });
+    
+    geocoder = new google.maps.Geocoder();
+    
+    // Try to center on user location
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                map.setCenter({
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                });
+            },
+            () => {
+                console.log("Geolocation failed, using Sydney default");
+            }
+        );
+    }
+    
+    // Click to place marker
+    map.addListener('click', (event) => {
+        const lat = event.latLng.lat();
+        const lng = event.latLng.lng();
+
+        if (!isInAustralia(lat, lng)) {
+            alert("Please select a location within Australia (mainland or Tasmania).");
+            return;
+        }
+
+        placeMarker(event.latLng);
+        reverseGeocode(event.latLng);
+    });
+    
+    // Autocomplete setup
+    const addressInput = document.getElementById('address');
+    autocomplete = new google.maps.places.Autocomplete(addressInput, {
+        componentRestrictions: { country: 'au' },
+        fields: ['address_components', 'geometry', 'name']
+    });
+    
+    autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        if (!place.geometry) return;
+        
+        map.setCenter(place.geometry.location);
+        map.setZoom(15);
+        placeMarker(place.geometry.location);
+        fillInAddress(place.address_components);
+    });
+    
+    // Blur events for manual address entry
+    addressInput.addEventListener('blur', () => {
+        const fullAddr = getFullAddress();
+        if (fullAddr) geocodeAddress(fullAddr);
+    });
+    
+    ['city', 'state', 'post_code'].forEach(id => {
+        document.getElementById(id).addEventListener('blur', () => {
+            const fullAddr = getFullAddress();
+            if (fullAddr) geocodeAddress(fullAddr);
+        });
+    });
+};
+
+// Form validation – require location
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById('addStoreForm').addEventListener('submit', function(e) {
+        const lat = document.getElementById('latitude').value;
+        const lng = document.getElementById('longitude').value;
+
+        if (!lat || !lng) {
+            e.preventDefault();
+            alert('Please set a location on the map!');
+        }
+    });
+});
+</script>
 {% endblock %}
