@@ -40,7 +40,9 @@
             const username = document.getElementById('username').value;
             const UserHasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(username);
             const password = document.getElementById('password').value;
-            const hasAlphanumeric = /[a-zA-Z0-9]/.test(password);
+            const hasLetter = /[a-zA-Z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            const hasAlphanumeric = hasLetter && hasNumber; 
             const PassHasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
             const confirmPassword = document.getElementById('confirm_password').value;
             

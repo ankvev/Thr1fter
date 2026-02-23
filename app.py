@@ -187,12 +187,13 @@ def register():
         features = sanitise_input(features)
         
         # Server-side validation
-        sym="!@#$%^&"
-        if len(features["password"]) < 12 or not ((features["password"]).isalnum()) or not any(symbol in features["password"] for symbol in sym):
+        syms = """`~!@#$%^&*()_-+={[}]|\:;'"<,.>/?}"""
+        nums = "1234567890"
+        if len(features["password"]) < 12 or not any(symbol in features["password"] for symbol in syms or not any(num in features["password"] for num in nums)):
             flash('Invalid password input.', 'error')
             return render_template('register.html')
         
-        if len(features["username"]) < 3 or any(symbol in features["password"] for symbol in sym):
+        if len(features["username"]) < 3 or any(symbol in features["username"] for symbol in syms):
             flash('Invalid username input', 'error')
             return render_template('register.html')
         
