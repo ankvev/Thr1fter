@@ -243,7 +243,7 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('dashboard.html', username=current_user.username)
+    return render_template('dashboard.html', username=current_user.username, maps_api_key=API_KEY)
 
 @app.route('/stores')
 @login_required
