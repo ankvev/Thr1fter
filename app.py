@@ -4,7 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os
 from dotenv import load_dotenv
-import bleach
+import nh3
 
 # Load environment variables
 load_dotenv()
@@ -36,7 +36,7 @@ class User(UserMixin):
 # Sanitise user input
 def sanitise_input(userInput : list):
     for key in userInput.keys():
-        userInput[key] = bleach.clean(userInput[key])
+        userInput[key] = nh3.clean(userInput[key])
     return userInput
 
 

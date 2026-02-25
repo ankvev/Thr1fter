@@ -9,13 +9,37 @@
             <input type="text" id="username" name="username" required>
         </div>
         
-        <div>
+        <div class="input-group">
             <label for="password">Password:</label>
             <input type="password" id="password" name="password" required>
+            <button type="button" onclick="togglePassword('password', 'password-icon')">
+                <i class="bi bi-eye" id="password-icon"></i>
+            </button>
         </div>
         
         <button type="submit">Login</button>
     </form>
     
     <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
+
+    <script>
+        function togglePassword(fieldId, iconId) {
+            const field = document.getElementById(fieldId);
+            const icon = document.getElementById(iconId);
+    
+            if (field.type === 'password') {
+                // Hidden so show
+                field.type = 'text';
+                icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+            } else {
+                // Visible so hide
+                field.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+    </script>
+    
 {% endblock %}
+
