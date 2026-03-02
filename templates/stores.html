@@ -1,6 +1,92 @@
 {% extends "layout.html" %}
 {% block body %}
 
+<div class="filter-section">
+    <div class="section-header" onclick="toggleSection(this)">
+        Sort By <span class="toggle-icon">-</span>
+    </div>
+    <div class="section-body">
+        <label>
+            <input type="radio" name="sort" value="date_asc" onchange="applyFilters()">
+            Date Added (Ascending)
+        </label>
+        <label>
+            <input type="radio" name="sort" value="date_desc" onchange="applyFilters()">
+            Date Added (Descending)
+        </label>
+        <label>
+            <input type="radio" name="sort" value="rating_asc" onchange="applyFilters()">
+            Rating (Ascending)
+        </label>
+        <label>
+            <input type="radio" name="sort" value="rating_desc" onchange="applyFilters()">
+            Rating (Descending)
+        </label>
 
+        <button type="button" id="order-toggle" onclick="toggleOrder()">
+            Ascending ↑
+        </button>
+
+    </div>
+</div>
+
+<div class="filter-section">
+    <div class="section-header" onclick="toggleSection(this)">
+        Category <span class="toggle-icon">-</span>
+    </div>
+    <div class="section-body">
+        <label>
+            <input type="checkbox" name="category" value="general_clothing" onchange="applyFilters()">
+            General Clothing
+        </label>
+
+        <label>
+            <input type="checkbox" name="category" value="vintage_retro" onchange="applyFilters()">
+            Vintage / Retro
+        </label>
+
+        <label>
+            <input type="checkbox" name="category" value="designer_luxury_resale" onchange="applyFilters()">
+            Designer / Luxury Resale
+        </label>
+
+        <label>
+            <input type="checkbox" name="category" value="op_charity_shop" onchange="applyFilters()">
+            Op / Charity Shop
+        </label>
+
+        <label>
+            <input type="checkbox" name="category" value="streetwear" onchange="applyFilters()">
+            Streetwear
+        </label>
+
+        <label>
+            <input type="checkbox" name="category" value="furniture" onchange="applyFilters()">
+            Furniture
+        </label>
+
+        <label>
+            <input type="checkbox" name="category" value="homewares" onchange="applyFilters()">
+            Homewares
+        </label>
+
+        <label>
+            <input type="checkbox" name="category" value="books_media" onchange="applyFilters()">
+            Books & Media
+        </label>
+
+        <label>
+            <input type="checkbox" name="category" value="mixed_goods" onchange="applyFilters()">
+            Mixed Goods
+        </label>
+
+        <label>
+            <input type="checkbox" name="category" value="antiques" onchange="applyFilters()">
+            Antiques
+        </label>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='stores.js') }}"></script>
 
 {% endblock %}

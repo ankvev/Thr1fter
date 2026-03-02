@@ -313,3 +313,8 @@ header {
         height: 300px !important;
     }
 }
+
+.section-body { max-height: 500px; transition: max-height 0.3s; }
+.section-body.collapsed { max-height: 0; overflow: hidden; }
+.chevron { transition: transform 0.25s; }
+.chevron.rotated { transform: rotate(180deg); }

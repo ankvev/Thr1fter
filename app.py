@@ -62,6 +62,7 @@ def init_db():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            admin BOOL,
             username TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
             email TEXT UNIQUE,
@@ -87,6 +88,24 @@ def init_db():
             added_by INTEGER,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (added_by) REFERENCES users(id)
+        )
+    ''')
+
+    # Store categories
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS categories (
+            store_id INTEGER NOT NULL,
+            general_clothing BOOL,
+            vintage_retro BOOL,
+            designer_luxury_resale BOOL,
+            op_charity_shop BOOL,
+            streetwear BOOL,
+            furniture BOOL,
+            homewares BOOL,
+            books_media BOOL,
+            mixed_goods BOOL,
+            antiques BOOL,
+            FOREIGN KEY (store_id) REFERENCES thrift_stores(id)
         )
     ''')
     
