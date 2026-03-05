@@ -44,13 +44,14 @@ def sanitise_input(userInput : list):
 @login_manager.user_loader
 def load_user(user_id):
     conn = sqlite3.connect('thr1fter.db')
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute('SELECT id, username, email FROM users WHERE id = ?', (user_id,))
     user_data = cursor.fetchone()
     conn.close()
     
     if user_data:
-        return User(user_data[0], user_data[1], user_data[2])
+        return User(user_data['id'], user_data['username'], user_data['email'])
     return None
 
 
@@ -85,6 +86,7 @@ def init_db():
             website TEXT,
             hours TEXT,
             description TEXT,
+            rating FLOAT,
             added_by INTEGER,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (added_by) REFERENCES users(id)
@@ -95,16 +97,38 @@ def init_db():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS categories (
             store_id INTEGER NOT NULL,
-            general_clothing BOOL,
-            vintage_retro BOOL,
-            designer_luxury_resale BOOL,
-            op_charity_shop BOOL,
-            streetwear BOOL,
-            furniture BOOL,
-            homewares BOOL,
-            books_media BOOL,
-            mixed_goods BOOL,
-            antiques BOOL,
+            general_clothing BOOL DEFAULT 0,
+            vintage_retro BOOL DEFAULT 0,
+            y2k BOOL DEFAULT 0,
+            grunge BOOL DEFAULT 0,
+            streetwear BOOL DEFAULT 0,
+            designer_luxury_resale BOOL DEFAULT 0,
+            formal_evening BOOL DEFAULT 0,
+            workwear BOOL DEFAULT 0,
+            sportswear_activewear BOOL DEFAULT 0,
+            childrens_clothing BOOL DEFAULT 0,
+            shoes_footwear BOOL DEFAULT 0,
+            bags_purses BOOL DEFAULT 0,
+            jewellery BOOL DEFAULT 0,
+            hats_caps BOOL DEFAULT 0,
+            belts_scarves BOOL DEFAULT 0,
+            furniture BOOL DEFAULT 0,
+            homewares_kitchenware BOOL DEFAULT 0,
+            antiques BOOL DEFAULT 0,
+            art_prints BOOL DEFAULT 0,
+            linen_textiles BOOL DEFAULT 0,
+            lamps_lighting BOOL DEFAULT 0,
+            books BOOL DEFAULT 0,
+            vinyl_music BOOL DEFAULT 0,
+            dvds_vhs_games BOOL DEFAULT 0,
+            collectibles_memorabilia BOOL DEFAULT 0,
+            toys_figurines BOOL DEFAULT 0,
+            op_charity_shop BOOL DEFAULT 0,
+            mixed_goods BOOL DEFAULT 0,
+            electrical_tech BOOL DEFAULT 0,
+            sports_equipment BOOL DEFAULT 0,
+            craft_fabric_sewing BOOL DEFAULT 0,
+            instruments BOOL DEFAULT 0,
             FOREIGN KEY (store_id) REFERENCES thrift_stores(id)
         )
     ''')
@@ -172,18 +196,17 @@ def login():
             return render_template('login.html')
         
         conn = sqlite3.connect('thr1fter.db')
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM users WHERE username = ?', (features["username"],))
         user_data = cursor.fetchone()
         conn.close()
         
         # Check if user exists and password is correct
-        if user_data and check_password_hash(user_data[2], features["password"]):
-            # Create User object and log them in
-            user = User(user_data[0], user_data[1], user_data[3])
+        if user_data and check_password_hash(user_data['password'], features["password"]):
+            user = User(user_data['id'], user_data['username'], user_data['email'])
             login_user(user)
             flash('Login successful!', 'success')
-            
             return redirect(url_for('dashboard'))
         else:
             flash('Incorrect username or password.', 'error')
@@ -268,25 +291,15 @@ def dashboard():
 @login_required
 def stores():
     conn = sqlite3.connect('thr1fter.db')
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM thrift_stores ORDER BY name')
+    cursor.execute('SELECT * FROM thrift_stores ORDER BY rating')
     stores_data = cursor.fetchall()
     conn.close()
     
     # Convert to list of dictionaries for easier use in template
-    stores_list = []
-    for store in stores_data:
-        stores_list.append({
-            'id': store[0],
-            'name': store[1],
-            'address': store[2],
-            'phone': store[3],
-            'website': store[4],
-            'hours': store[5],
-            'description': store[6],
-            'added_by': store[7],
-        })
-    
+    stores_list = [dict(store) for store in stores_data]
+
     return render_template('stores.html', stores=stores_list, username=current_user.username)
 
 @app.route('/settings')
