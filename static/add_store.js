@@ -23,12 +23,10 @@ function placeMarker(location) {
         return;
     }
     
-    // Remove existing marker if any
     if (marker) {
         marker.setMap(null);
     }
     
-    // Place new marker
     marker = new google.maps.Marker({
         position: location,
         map: map,
@@ -36,14 +34,11 @@ function placeMarker(location) {
         animation: google.maps.Animation.DROP
     });
     
-    // Update form fields
     document.getElementById('latitude').value = lat;
     document.getElementById('longitude').value = lng;
     
-    // Update status text
     updateLocationStatus(lat, lng);
     
-    // Handle marker drag
     marker.addListener('dragend', (event) => {
         const newLat = event.latLng.lat();
         const newLng = event.latLng.lng();
@@ -139,7 +134,6 @@ window.initMap = function () {
     
     geocoder = new google.maps.Geocoder();
     
-    // Try to center on user location
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -154,7 +148,6 @@ window.initMap = function () {
         );
     }
     
-    // Click to place marker
     map.addListener('click', (event) => {
         const lat = event.latLng.lat();
         const lng = event.latLng.lng();
@@ -174,23 +167,30 @@ window.initMap = function () {
         componentRestrictions: { country: 'au' },
         fields: ['address_components', 'geometry', 'name']
     });
-    
+
+    let placeSelected = false;
+
     autocomplete.addListener('place_changed', () => {
         const place = autocomplete.getPlace();
         if (!place.geometry) return;
-        
+
+        placeSelected = true;
         map.setCenter(place.geometry.location);
         map.setZoom(15);
         placeMarker(place.geometry.location);
         fillInAddress(place.address_components);
     });
-    
+
     // Blur events for manual address entry
     addressInput.addEventListener('blur', () => {
+        if (placeSelected) {
+            placeSelected = false;
+            return;
+        }
         const fullAddr = getFullAddress();
         if (fullAddr) geocodeAddress(fullAddr);
     });
-    
+
     ['city', 'state', 'post_code'].forEach(id => {
         document.getElementById(id).addEventListener('blur', () => {
             const fullAddr = getFullAddress();
@@ -201,6 +201,13 @@ window.initMap = function () {
 
 // Form validation – require location
 document.addEventListener("DOMContentLoaded", function () {
+    // Prevent Enter key from submitting the form
+    document.getElementById('addStoreForm').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+        }
+    });
+
     document.getElementById('addStoreForm').addEventListener('submit', function(e) {
         const lat = document.getElementById('latitude').value;
         const lng = document.getElementById('longitude').value;
