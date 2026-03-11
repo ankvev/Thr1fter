@@ -41,8 +41,11 @@ function applyFilters() {
 
     filtered.sort((a, b) => {
 
-        let valA = a[sortType];
-        let valB = b[sortType];
+        // 'date' is the UI label but the field on the store object is 'created_at'
+        const field = sortType === 'date' ? 'created_at' : sortType;
+
+        let valA = a[field];
+        let valB = b[field];
 
         if (sortType === "date") {
             valA = new Date(valA);

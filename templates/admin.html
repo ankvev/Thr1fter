@@ -74,7 +74,7 @@
                       {% if user.id != current_user.id %}
                       <form method="POST"
                             action="{{ url_for('admin_toggle_admin', user_id=user.id) }}"
-                            onsubmit="return confirm('{{ 'Remove admin from' if user.admin else 'Grant admin to' }} {{ user.username }}?')">
+                            onsubmit="return confirm('{% if user.admin %}Remove admin from{% else %}Grant admin to{% endif %} {{ user.username | e }}?')">
                         <button type="submit"
                                 class="btn btn-sm {{ 'btn-warning' if user.admin else 'thr-btn-outline' }}">
                           <i class="bi bi-shield{{ '-fill' if user.admin else '' }} me-1"></i>
@@ -84,7 +84,7 @@
 
                       <form method="POST"
                             action="{{ url_for('admin_delete_user', user_id=user.id) }}"
-                            onsubmit="return confirm('Permanently delete user {{ user.username }} and ALL their data?')">
+                            onsubmit="return confirm('Permanently delete user {{ user.username | e }} and ALL their data?')">
                         <button type="submit" class="btn btn-sm btn-outline-danger">
                           <i class="bi bi-trash me-1"></i>Delete
                         </button>
@@ -133,7 +133,7 @@
                   <td>
                     <form method="POST"
                           action="{{ url_for('admin_delete_store', store_id=store.id) }}"
-                          onsubmit="return confirm('Delete store {{ store.name }}?')">
+                          onsubmit="return confirm('Delete store {{ store.name | e }}?')">
                       <button type="submit" class="btn btn-sm btn-outline-danger">
                         <i class="bi bi-trash me-1"></i>Delete
                       </button>

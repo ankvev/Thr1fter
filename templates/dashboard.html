@@ -45,15 +45,9 @@
                 {{ store.address }}, {{ store.city }}{% if store.state %}, {{ store.state }}{% endif %}
               </p>
               {% if store.hours %}
-              <p class="card-text small text-muted mb-1">
+              <p class="card-text small text-muted mb-0">
                 <i class="bi bi-clock me-1"></i>{{ store.hours }}
               </p>
-              {% endif %}
-              {% if store.rating %}
-              <div class="d-flex align-items-center gap-1">
-                <i class="bi bi-star-fill text-warning small"></i>
-                <span class="small fw-semibold">{{ "%.1f"|format(store.rating) }}/10</span>
-              </div>
               {% endif %}
             </div>
           </div>
@@ -75,6 +69,9 @@
 
   </div>
 </div>
+
+<!-- Store data for map markers – read by dashboard.js -->
+<script id="stores-data" type="application/json">{{ map_stores | tojson }}</script>
 
 <!-- Google Maps API – async load, calls window.initMap once ready -->
 <script src="https://maps.googleapis.com/maps/api/js?key={{ maps_api_key }}&libraries=places&loading=async&callback=initMap" defer></script>

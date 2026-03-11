@@ -27,11 +27,11 @@
               Descending <i class="bi bi-arrow-down"></i>
             </button>
             <!-- Sort radio buttons – onchange triggers applyFilters() in stores.js -->
-            {% for val, label in [('rating','Rating'),('date','Date Added'),('distance','Distance')] %}
+            {% for val, label in [('name','Name'),('date','Date Added'),('distance','Distance')] %}
             <div class="form-check">
               <input class="form-check-input thr-check" type="radio"
                      name="sort" value="{{ val }}" id="sort_{{ val }}"
-                     onchange="applyFilters()" {% if val == 'rating' %}checked{% endif %}>
+                     onchange="applyFilters()" {% if val == 'date' %}checked{% endif %}>
               <label class="form-check-label small" for="sort_{{ val }}">{{ label }}</label>
             </div>
             {% endfor %}

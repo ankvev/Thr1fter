@@ -329,13 +329,27 @@ def dashboard():
         ORDER  BY f.created_at DESC
     ''', (current_user.id,))
     favourite_stores = [dict(r) for r in cursor.fetchall()]
+
+    # Fetch ALL stores with coordinates for the map markers,
+    # flagging which ones this user has favourited
+    cursor.execute('''
+        SELECT ts.id, ts.name, ts.address, ts.city, ts.state,
+               ts.latitude, ts.longitude, ts.phone, ts.website, ts.hours,
+               CASE WHEN f.store_id IS NOT NULL THEN 1 ELSE 0 END AS is_favourite
+        FROM   thrift_stores ts
+        LEFT   JOIN favorites f ON ts.id = f.store_id AND f.user_id = ?
+        WHERE  ts.latitude IS NOT NULL AND ts.longitude IS NOT NULL
+    ''', (current_user.id,))
+    map_stores = [dict(r) for r in cursor.fetchall()]
+
     conn.close()
 
     return render_template(
         'dashboard.html',
         username=current_user.username,
         maps_api_key=API_KEY,
-        favourite_stores=favourite_stores
+        favourite_stores=favourite_stores,
+        map_stores=map_stores
     )
 
 
@@ -367,7 +381,7 @@ def stores():
         FROM   thrift_stores ts
         LEFT   JOIN categories c ON ts.id = c.store_id
         LEFT   JOIN favorites  f ON ts.id = f.store_id AND f.user_id = ?
-        ORDER  BY ts.rating DESC
+        ORDER  BY ts.name ASC
     ''', (current_user.id,))
 
     stores_list = [dict(r) for r in cursor.fetchall()]
