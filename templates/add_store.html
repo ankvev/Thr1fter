@@ -1,133 +1,156 @@
 {% extends "layout.html" %}
-
 {% block body %}
-<div class="add-store-page">
-    <h1>Add a New Thrift Store</h1>
-    <p class="subtitle">Share your favorite thrift store with the community!</p>
 
-    <form method="POST" class="add-store-form" id="addStoreForm">
-        <div class="form-section">
-            <h2>Basic Information</h2>
-            
-            <div class="form-group">
-                <label for="name">Store Name *</label>
-                <input type="text" id="name" name="name" required placeholder="e.g., Get Wasted">
-            </div>
-            
-            <div class="form-group">
-                <label for="address">Street Address *</label>
-                <input type="text" id="address" name="address" required placeholder="e.g., 546 George St">
-                <small>Start typing and select from suggestions, or click on the map below</small>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="city">City *</label>
-                    <input type="text" id="city" name="city" required placeholder="e.g., Sydney">
-                </div>
-                
-                <div class="form-group">
-                    <label for="state">State</label>
-                    <input type="text" id="state" name="state" placeholder="e.g., NSW">
-                </div>
-                
-                <div class="form-group">
-                    <label for="post_code">Post Code</label>
-                    <input type="text" id="post_code" name="post_code" placeholder="e.g., 2000">
-                </div>
-            </div>
+<div class="add-store-page py-4">
+  <h1 class="fw-bold mb-1" style="color: var(--thr-green-700);">Add a New Thrift Store</h1>
+  <p class="text-muted mb-4">Share your favourite thrift store with the community!</p>
+
+  <form method="POST" class="add-store-form" id="addStoreForm">
+
+    <!-- ── Basic Information ── -->
+    <div class="form-section">
+      <h2>Basic Information</h2>
+
+      <div class="mb-3">
+        <label for="name" class="form-label fw-semibold">
+          Store Name <span class="text-danger">*</span>
+        </label>
+        <input type="text" id="name" name="name" class="form-control"
+               required placeholder="e.g., Get Wasted">
+      </div>
+
+      <div class="mb-3">
+        <label for="address" class="form-label fw-semibold">
+          Street Address <span class="text-danger">*</span>
+        </label>
+        <!-- Address input is wired to Google Places Autocomplete in add_store.js -->
+        <input type="text" id="address" name="address" class="form-control"
+               required placeholder="e.g., 546 George St">
+        <div class="form-text">Start typing and select from suggestions, or click on the map below</div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="city" class="form-label fw-semibold">
+            City <span class="text-danger">*</span>
+          </label>
+          <input type="text" id="city" name="city" class="form-control"
+                 required placeholder="e.g., Sydney">
         </div>
-
-        <div class="form-section">
-            <h2>Location</h2>
-            <p class="map-instructions">Click on the map to set the exact location, or it will be auto-filled from your address.</p>
-            
-            <!-- Map Container – added explicit height -->
-            <div id="map" class="location-map" style="height: 400px; width: 100%; border: 1px solid #ddd;"></div>
-            
-            <!-- Hidden fields for coordinates -->
-            <input type="hidden" id="latitude" name="latitude">
-            <input type="hidden" id="longitude" name="longitude">
-            
-            <p class="location-status" id="locationStatus">No location selected yet</p>
+        <div class="col-md-3">
+          <label for="state" class="form-label fw-semibold">State</label>
+          <input type="text" id="state" name="state" class="form-control" placeholder="e.g., NSW">
         </div>
-
-        <div class="form-section">
-            <h2>Contact Information</h2>
-            
-            <div class="form-group">
-                <label for="phone">Phone Number</label>
-                <input type="tel" id="phone" name="phone" placeholder="e.g., (02) 1234-5678">
-            </div>
-            
-            <div class="form-group">
-                <label for="website">Website</label>
-                <input type="url" id="website" name="website" placeholder="e.g., https://example.com">
-            </div>
-            
-            <div class="form-group">
-                <label for="hours">Opening Hours</label>
-                <input type="text" id="hours" name="hours" placeholder="e.g., Mon-Fri 9AM-5PM, Sat 10AM-4PM">
-            </div>
+        <div class="col-md-3">
+          <label for="post_code" class="form-label fw-semibold">Post Code</label>
+          <input type="text" id="post_code" name="post_code" class="form-control" placeholder="e.g., 2000">
         </div>
+      </div>
+    </div>
 
-        <div class="form-section">
-            <h2>Additional Details</h2>
+    <!-- ── Location Map ── -->
+    <div class="form-section">
+      <h2>Location</h2>
+      <p class="map-instructions">
+        Click on the map to pin the exact location, or it will be auto-filled from the address above.
+      </p>
 
-            <div class="form-group">
-                <label>Categories</label>
-                <div class="checkbox-scroll-box" id="categories">
-                    <label><input type="checkbox" name="categories" value="general_clothing"> General Clothing</label>
-                    <label><input type="checkbox" name="categories" value="vintage_retro"> Vintage / Retro</label>
-                    <label><input type="checkbox" name="categories" value="y2k"> Y2K</label>
-                    <label><input type="checkbox" name="categories" value="grunge"> Grunge</label>
-                    <label><input type="checkbox" name="categories" value="streetwear"> Streetwear</label>
-                    <label><input type="checkbox" name="categories" value="designer_luxury_resale"> Designer / Luxury Resale</label>
-                    <label><input type="checkbox" name="categories" value="formal_evening"> Formal / Evening Wear</label>
-                    <label><input type="checkbox" name="categories" value="workwear"> Workwear</label>
-                    <label><input type="checkbox" name="categories" value="sportswear_activewear"> Sportswear / Activewear</label>
-                    <label><input type="checkbox" name="categories" value="childrens_clothing"> Children's Clothing</label>
-                    <label><input type="checkbox" name="categories" value="shoes_footwear"> Shoes / Footwear</label>
-                    <label><input type="checkbox" name="categories" value="bags_purses"> Bags / Purses</label>
-                    <label><input type="checkbox" name="categories" value="jewellery"> Jewellery</label>
-                    <label><input type="checkbox" name="categories" value="hats_caps"> Hats / Caps</label>
-                    <label><input type="checkbox" name="categories" value="belts_scarves"> Belts / Scarves</label>
-                    <label><input type="checkbox" name="categories" value="furniture"> Furniture</label>
-                    <label><input type="checkbox" name="categories" value="homewares_kitchenware"> Homewares / Kitchenware</label>
-                    <label><input type="checkbox" name="categories" value="antiques"> Antiques</label>
-                    <label><input type="checkbox" name="categories" value="art_prints"> Art / Prints</label>
-                    <label><input type="checkbox" name="categories" value="linen_textiles"> Linen / Textiles</label>
-                    <label><input type="checkbox" name="categories" value="lamps_lighting"> Lamps / Lighting</label>
-                    <label><input type="checkbox" name="categories" value="books"> Books</label>
-                    <label><input type="checkbox" name="categories" value="vinyl_music"> Vinyl / Music</label>
-                    <label><input type="checkbox" name="categories" value="dvds_vhs_games"> DVDs / VHS / Games</label>
-                    <label><input type="checkbox" name="categories" value="collectibles_memorabilia"> Collectibles / Memorabilia</label>
-                    <label><input type="checkbox" name="categories" value="toys_figurines"> Toys / Figurines</label>
-                    <label><input type="checkbox" name="categories" value="op_charity_shop"> Op / Charity Shop</label>
-                    <label><input type="checkbox" name="categories" value="mixed_goods"> Mixed Goods</label>
-                    <label><input type="checkbox" name="categories" value="electrical_tech"> Electrical / Tech</label>
-                    <label><input type="checkbox" name="categories" value="sports_equipment"> Sports Equipment</label>
-                    <label><input type="checkbox" name="categories" value="craft_fabric_sewing"> Craft / Fabric / Sewing</label>
-                    <label><input type="checkbox" name="categories" value="instruments"> Instruments</label>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="description">Description</label>
-                <textarea id="description" name="description" rows="4" placeholder="Tell us about this store..."></textarea>
-            </div>
+      <!-- Map div – Google Maps attaches here via add_store.js initMap() -->
+      <div id="map" class="location-map"></div>
+      <!-- Hidden coordinate fields – populated by placeMarker() in add_store.js -->
+      <input type="hidden" id="latitude"  name="latitude">
+      <input type="hidden" id="longitude" name="longitude">
+
+      <p class="location-status" id="locationStatus">
+        <i class="bi bi-geo me-1"></i>No location selected yet
+      </p>
+    </div>
+
+    <!-- ── Contact Information ── -->
+    <div class="form-section">
+      <h2>Contact Information</h2>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="phone" class="form-label fw-semibold">Phone Number</label>
+          <input type="tel" id="phone" name="phone" class="form-control"
+                 placeholder="e.g., (02) 1234-5678">
         </div>
-
-        <div class="form-actions">
-            <button type="submit" class="btn-primary">Add Store</button>
-            <a href="{{ url_for('stores') }}" class="btn-cancel">Cancel</a>
+        <div class="col-md-6">
+          <label for="website" class="form-label fw-semibold">Website</label>
+          <input type="url" id="website" name="website" class="form-control"
+                 placeholder="https://example.com">
         </div>
-    </form>
+      </div>
+      <div class="mt-3">
+        <label for="hours" class="form-label fw-semibold">Opening Hours</label>
+        <input type="text" id="hours" name="hours" class="form-control"
+               placeholder="e.g., Mon–Fri 9AM–5PM, Sat 10AM–4PM">
+      </div>
+    </div>
+
+    <!-- ── Additional Details ── -->
+    <div class="form-section">
+      <h2>Additional Details</h2>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Categories</label>
+        <!-- Scrollable checkbox list – same category values as the DB columns -->
+        <div class="checkbox-scroll-box">
+          <label><input type="checkbox" name="categories" value="general_clothing"> General Clothing</label>
+          <label><input type="checkbox" name="categories" value="vintage_retro"> Vintage / Retro</label>
+          <label><input type="checkbox" name="categories" value="y2k"> Y2K</label>
+          <label><input type="checkbox" name="categories" value="grunge"> Grunge</label>
+          <label><input type="checkbox" name="categories" value="streetwear"> Streetwear</label>
+          <label><input type="checkbox" name="categories" value="designer_luxury_resale"> Designer / Luxury Resale</label>
+          <label><input type="checkbox" name="categories" value="formal_evening"> Formal / Evening Wear</label>
+          <label><input type="checkbox" name="categories" value="workwear"> Workwear</label>
+          <label><input type="checkbox" name="categories" value="sportswear_activewear"> Sportswear / Activewear</label>
+          <label><input type="checkbox" name="categories" value="childrens_clothing"> Children's Clothing</label>
+          <label><input type="checkbox" name="categories" value="shoes_footwear"> Shoes / Footwear</label>
+          <label><input type="checkbox" name="categories" value="bags_purses"> Bags / Purses</label>
+          <label><input type="checkbox" name="categories" value="jewellery"> Jewellery</label>
+          <label><input type="checkbox" name="categories" value="hats_caps"> Hats / Caps</label>
+          <label><input type="checkbox" name="categories" value="belts_scarves"> Belts / Scarves</label>
+          <label><input type="checkbox" name="categories" value="furniture"> Furniture</label>
+          <label><input type="checkbox" name="categories" value="homewares_kitchenware"> Homewares / Kitchenware</label>
+          <label><input type="checkbox" name="categories" value="antiques"> Antiques</label>
+          <label><input type="checkbox" name="categories" value="art_prints"> Art / Prints</label>
+          <label><input type="checkbox" name="categories" value="linen_textiles"> Linen / Textiles</label>
+          <label><input type="checkbox" name="categories" value="lamps_lighting"> Lamps / Lighting</label>
+          <label><input type="checkbox" name="categories" value="books"> Books</label>
+          <label><input type="checkbox" name="categories" value="vinyl_music"> Vinyl / Music</label>
+          <label><input type="checkbox" name="categories" value="dvds_vhs_games"> DVDs / VHS / Games</label>
+          <label><input type="checkbox" name="categories" value="collectibles_memorabilia"> Collectibles / Memorabilia</label>
+          <label><input type="checkbox" name="categories" value="toys_figurines"> Toys / Figurines</label>
+          <label><input type="checkbox" name="categories" value="op_charity_shop"> Op / Charity Shop</label>
+          <label><input type="checkbox" name="categories" value="mixed_goods"> Mixed Goods</label>
+          <label><input type="checkbox" name="categories" value="electrical_tech"> Electrical / Tech</label>
+          <label><input type="checkbox" name="categories" value="sports_equipment"> Sports Equipment</label>
+          <label><input type="checkbox" name="categories" value="craft_fabric_sewing"> Craft / Fabric / Sewing</label>
+          <label><input type="checkbox" name="categories" value="instruments"> Instruments</label>
+        </div>
+      </div>
+
+      <div>
+        <label for="description" class="form-label fw-semibold">Description</label>
+        <textarea id="description" name="description" class="form-control" rows="4"
+                  placeholder="Tell us about this store…"></textarea>
+      </div>
+    </div>
+
+    <!-- ── Submit / Cancel ── -->
+    <div class="d-flex gap-3 flex-wrap">
+      <button type="submit" class="btn thr-btn-primary px-4 py-2">
+        <i class="bi bi-plus-circle me-2"></i>Add Store
+      </button>
+      <a href="{{ url_for('stores') }}" class="btn thr-btn-outline px-4 py-2">Cancel</a>
+    </div>
+
+  </form>
 </div>
 
-<!-- Load Google Maps JavaScript API -->
-<script src="https://maps.googleapis.com/maps/api/js?key={{ maps_api_key }}&libraries=places&loading=async&callback=initMap" defer></script>
-
+<!-- add_store.js must load first so initMap is defined before the Maps API calls it -->
 <script src="{{ url_for('static', filename='add_store.js') }}"></script>
-
+<!-- Google Maps API – async, calls initMap when loaded -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{ maps_api_key }}&libraries=places&callback=initMap" async defer></script>
 {% endblock %}

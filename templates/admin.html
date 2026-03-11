@@ -1,0 +1,156 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div class="container-fluid py-4 px-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1"><i class="bi bi-shield-fill me-2 text-warning"></i>Admin Panel</h2>
+      <p class="text-muted mb-0">Manage users and stores</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <span class="badge thr-badge-count fs-6">{{ users | length }} Users</span>
+      <span class="badge thr-badge-count fs-6">{{ all_stores | length }} Stores</span>
+    </div>
+  </div>
+
+  <ul class="nav nav-tabs thr-admin-tabs mb-4" id="adminTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="users-tab" data-bs-toggle="tab"
+              data-bs-target="#usersPanel" type="button" role="tab">
+        <i class="bi bi-people me-2"></i>Users ({{ users | length }})
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="stores-tab" data-bs-toggle="tab"
+              data-bs-target="#storesPanel" type="button" role="tab">
+        <i class="bi bi-shop me-2"></i>Stores ({{ all_stores | length }})
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+
+    <div class="tab-pane fade show active" id="usersPanel" role="tabpanel">
+      <div class="card thr-settings-card shadow-sm">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead class="thr-table-head">
+                <tr>
+                  <th>ID</th>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Admin</th>
+                  <th>Stores</th>
+                  <th>Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for user in users %}
+                <tr>
+                  <td class="text-muted small">#{{ user.id }}</td>
+                  <td class="fw-semibold">
+                    {{ user.username }}
+                    {% if user.id == current_user.id %}
+                      <span class="badge bg-secondary ms-1">You</span>
+                    {% endif %}
+                  </td>
+                  <td class="small text-muted">{{ user.email or '—' }}</td>
+                  <td>
+                    {% if user.admin %}
+                      <span class="badge bg-warning text-dark">
+                        <i class="bi bi-shield-fill me-1"></i>Admin
+                      </span>
+                    {% else %}
+                      <span class="badge bg-secondary">User</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ user.store_count }}</td>
+                  <td class="small text-muted">{{ user.created_at[:10] }}</td>
+                  <td>
+                    <div class="d-flex gap-1 flex-wrap">
+                      {% if user.id != current_user.id %}
+                      <form method="POST"
+                            action="{{ url_for('admin_toggle_admin', user_id=user.id) }}"
+                            onsubmit="return confirm('{{ 'Remove admin from' if user.admin else 'Grant admin to' }} {{ user.username }}?')">
+                        <button type="submit"
+                                class="btn btn-sm {{ 'btn-warning' if user.admin else 'thr-btn-outline' }}">
+                          <i class="bi bi-shield{{ '-fill' if user.admin else '' }} me-1"></i>
+                          {{ 'Remove Admin' if user.admin else 'Make Admin' }}
+                        </button>
+                      </form>
+
+                      <form method="POST"
+                            action="{{ url_for('admin_delete_user', user_id=user.id) }}"
+                            onsubmit="return confirm('Permanently delete user {{ user.username }} and ALL their data?')">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                          <i class="bi bi-trash me-1"></i>Delete
+                        </button>
+                      </form>
+                      {% else %}
+                        <span class="text-muted small">—</span>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="text-center text-muted py-3">No users found.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="storesPanel" role="tabpanel">
+      <div class="card thr-settings-card shadow-sm">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead class="thr-table-head">
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>City</th>
+                  <th>State</th>
+                  <th>Added By</th>
+                  <th>Added</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for store in all_stores %}
+                <tr>
+                  <td class="text-muted small">#{{ store.id }}</td>
+                  <td class="fw-semibold">{{ store.name }}</td>
+                  <td>{{ store.city }}</td>
+                  <td>{{ store.state or '—' }}</td>
+                  <td class="small text-muted">{{ store.added_by_username or '—' }}</td>
+                  <td class="small text-muted">{{ store.created_at[:10] }}</td>
+                  <td>
+                    <form method="POST"
+                          action="{{ url_for('admin_delete_store', store_id=store.id) }}"
+                          onsubmit="return confirm('Delete store {{ store.name }}?')">
+                      <button type="submit" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash me-1"></i>Delete
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="text-center text-muted py-3">No stores found.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

@@ -1,43 +1,89 @@
 {% extends "layout.html" %}
-
 {% block body %}
-    <h1>Register</h1>
-    
-    <form method="POST" id="registerForm" onsubmit="return validateForm()">
-        <div>
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
-            <div class="error-message" id="usernameError"></div>
-        </div>
-        
-        <div>
-            <label for="email">Email (optional):</label>
-            <input type="email" id="email" name="email">
-        </div>
-        
+
+<div class="thr-auth-wrapper d-flex align-items-center justify-content-center py-5">
+  <div class="thr-auth-card card shadow-sm p-4 p-md-5">
+
+    <div class="text-center mb-4">
+      <h1 class="thr-brand fs-2 fw-bold">Create an Account</h1>
+      <p class="text-muted">Join Thr1fter and start discovering stores</p>
+    </div>
+
+    <!-- validateForm() in register.js runs client-side checks before submit -->
+    <form method="POST" id="registerForm" onsubmit="return validateForm()" novalidate>
+
+      <!-- Username -->
+      <div class="mb-3">
+        <label for="username" class="form-label fw-semibold">
+          Username <span class="text-danger">*</span>
+        </label>
         <div class="input-group">
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-            <button type="button" onclick="togglePassword('password', 'password-icon')">
-                <i class="bi bi-eye" id="password-icon"></i>
-            </button>
-            <div class="error-message" id="passwordError"></div>
+          <span class="input-group-text thr-input-icon"><i class="bi bi-person"></i></span>
+          <input type="text" id="username" name="username"
+                 class="form-control" placeholder="At least 3 characters" required autofocus>
         </div>
-        
+        <!-- Error div populated by showError() in register.js -->
+        <div class="error-message text-danger small mt-1" id="usernameError"></div>
+      </div>
+
+      <!-- Email (optional) -->
+      <div class="mb-3">
+        <label for="email" class="form-label fw-semibold">
+          Email <span class="text-muted fw-normal">(optional)</span>
+        </label>
         <div class="input-group">
-            <label for="confirm_password">Confirm Password:</label>
-            <input type="password" id="confirm_password" name="confirm_password" required>
-            <button type="button" onclick="togglePassword('confirm_password', 'password-icon')">
-                <i class="bi bi-eye" id="password-icon"></i>
-            </button>
-            <div class="error-message" id="confirmPasswordError"></div>
+          <span class="input-group-text thr-input-icon"><i class="bi bi-envelope"></i></span>
+          <input type="email" id="email" name="email"
+                 class="form-control" placeholder="you@example.com">
         </div>
-        
-        <button type="submit">Register</button>
+      </div>
+
+      <!-- Password -->
+      <div class="mb-3">
+        <label for="password" class="form-label fw-semibold">
+          Password <span class="text-danger">*</span>
+        </label>
+        <div class="input-group">
+          <span class="input-group-text thr-input-icon"><i class="bi bi-lock"></i></span>
+          <input type="password" id="password" name="password"
+                 class="form-control" placeholder="Min 12 chars, number &amp; symbol" required>
+          <button type="button" class="btn thr-btn-eye"
+                  onclick="togglePassword('password', 'pwd-icon')" aria-label="Show/hide password">
+            <i class="bi bi-eye" id="pwd-icon"></i>
+          </button>
+        </div>
+        <div class="error-message text-danger small mt-1" id="passwordError"></div>
+      </div>
+
+      <!-- Confirm password -->
+      <div class="mb-4">
+        <label for="confirm_password" class="form-label fw-semibold">
+          Confirm Password <span class="text-danger">*</span>
+        </label>
+        <div class="input-group">
+          <span class="input-group-text thr-input-icon"><i class="bi bi-lock-fill"></i></span>
+          <input type="password" id="confirm_password" name="confirm_password"
+                 class="form-control" placeholder="Repeat your password" required>
+          <button type="button" class="btn thr-btn-eye"
+                  onclick="togglePassword('confirm_password', 'cpwd-icon')" aria-label="Show/hide password">
+            <i class="bi bi-eye" id="cpwd-icon"></i>
+          </button>
+        </div>
+        <div class="error-message text-danger small mt-1" id="confirmPasswordError"></div>
+      </div>
+
+      <button type="submit" class="btn thr-btn-primary w-100 py-2">
+        <i class="bi bi-person-check me-2"></i>Create Account
+      </button>
     </form>
-    
-    <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
 
-    <script src="{{ url_for('static', filename='register.js') }}"></script>
+    <hr class="my-4">
+    <p class="text-center mb-0 text-muted">
+      Already have an account?
+      <a href="{{ url_for('login') }}" class="thr-link fw-semibold">Login here</a>
+    </p>
+  </div>
+</div>
 
+<script src="{{ url_for('static', filename='register.js') }}"></script>
 {% endblock %}

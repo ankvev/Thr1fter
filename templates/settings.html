@@ -1,11 +1,197 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<h1>Settings</h1>
-    <p>Colourblind mode:</p>
-    <p>Enable location tracking (if disabled default location will be sydney city):</p>
-    <p>Edit Account Details:</p>
-    <p>Delete Account:</p>
- 
+<div class="container py-5" style="max-width: 820px;">
+  <h2 class="fw-bold mb-1"><i class="bi bi-gear me-2"></i>Settings</h2>
+  <p class="text-muted mb-5">Manage your account and preferences</p>
 
+  <!-- ── Appearance ── -->
+  <div class="card thr-settings-card shadow-sm mb-4">
+    <div class="card-header thr-card-header">
+      <h5 class="mb-0"><i class="bi bi-palette me-2"></i>Appearance</h5>
+    </div>
+    <div class="card-body p-4">
+
+      <!-- Dark mode toggle – JS in settings.js handles the change -->
+      <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+          <p class="fw-semibold mb-1">Dark Mode</p>
+          <p class="text-muted small mb-0">Switch between light and dark theme</p>
+        </div>
+        <div class="form-check form-switch mb-0">
+          <input class="form-check-input thr-switch" type="checkbox"
+                 id="darkModeToggle" role="switch" aria-label="Toggle dark mode">
+        </div>
+      </div>
+
+      <!-- Colourblind mode -->
+      <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+        <div>
+          <p class="fw-semibold mb-1">Colourblind Mode</p>
+          <p class="text-muted small mb-0">Adjusts the colour palette for better accessibility</p>
+        </div>
+        <div class="form-check form-switch mb-0">
+          <input class="form-check-input thr-switch" type="checkbox"
+                 id="colourblindToggle" role="switch" aria-label="Toggle colourblind mode">
+        </div>
+      </div>
+
+      <!-- Text size buttons -->
+      <div>
+        <p class="fw-semibold mb-1">Text Size</p>
+        <p class="text-muted small mb-2">Adjust font size across the whole app</p>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm thr-btn-outline text-size-btn" data-size="small">Small</button>
+          <button class="btn btn-sm thr-btn-primary text-size-btn" data-size="normal">Normal</button>
+          <button class="btn btn-sm thr-btn-outline text-size-btn" data-size="large">Large</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Location ── -->
+  <div class="card thr-settings-card shadow-sm mb-4">
+    <div class="card-header thr-card-header">
+      <h5 class="mb-0"><i class="bi bi-geo-alt me-2"></i>Location</h5>
+    </div>
+    <div class="card-body p-4">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <p class="fw-semibold mb-1">Enable Location Tracking</p>
+          <p class="text-muted small mb-0">
+            When on, the dashboard map centres on your current location.
+            When off, it defaults to Sydney CBD.
+          </p>
+        </div>
+        <div class="form-check form-switch mb-0">
+          <input class="form-check-input thr-switch" type="checkbox"
+                 id="locationToggle" role="switch" aria-label="Enable location tracking">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Edit Account Details ── -->
+  <div class="card thr-settings-card shadow-sm mb-4">
+    <div class="card-header thr-card-header">
+      <h5 class="mb-0"><i class="bi bi-person-gear me-2"></i>Account Details</h5>
+    </div>
+    <div class="card-body p-4">
+      <!-- Posts to /settings/update_account -->
+      <form method="POST" action="{{ url_for('update_account') }}" novalidate>
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label for="username" class="form-label fw-semibold">Username</label>
+            <input type="text" id="username" name="username"
+                   class="form-control" value="{{ username }}" required minlength="3">
+          </div>
+          <div class="col-md-6">
+            <label for="email" class="form-label fw-semibold">Email</label>
+            <input type="email" id="email" name="email"
+                   class="form-control" value="{{ email or '' }}" placeholder="you@example.com">
+          </div>
+        </div>
+        <button type="submit" class="btn thr-btn-primary">
+          <i class="bi bi-save me-2"></i>Save Changes
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Change Password ── -->
+  <div class="card thr-settings-card shadow-sm mb-4">
+    <div class="card-header thr-card-header">
+      <h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Change Password</h5>
+    </div>
+    <div class="card-body p-4">
+      <!-- Password match is validated client-side by settings.js before submission -->
+      <form method="POST" action="{{ url_for('change_password') }}"
+            id="changePasswordForm" novalidate>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Current Password</label>
+          <div class="input-group">
+            <input type="password" name="current_password" id="cur_pw"
+                   class="form-control" required>
+            <button type="button" class="btn thr-btn-eye"
+                    onclick="togglePassword('cur_pw','cur-pw-icon')" aria-label="Toggle">
+              <i class="bi bi-eye" id="cur-pw-icon"></i>
+            </button>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">New Password</label>
+          <div class="input-group">
+            <input type="password" name="new_password" id="new_pw"
+                   class="form-control" placeholder="Min 12 chars, number &amp; symbol" required>
+            <button type="button" class="btn thr-btn-eye"
+                    onclick="togglePassword('new_pw','new-pw-icon')" aria-label="Toggle">
+              <i class="bi bi-eye" id="new-pw-icon"></i>
+            </button>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Confirm New Password</label>
+          <input type="password" name="confirm_password" id="conf_pw"
+                 class="form-control" required>
+          <div class="text-danger small mt-1" id="pwMatchError"></div>
+        </div>
+        <button type="submit" class="btn thr-btn-primary">
+          <i class="bi bi-key me-2"></i>Change Password
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Danger Zone ── -->
+  <div class="card thr-settings-card thr-danger-card shadow-sm mb-4">
+    <div class="card-header thr-card-header-danger">
+      <h5 class="mb-0"><i class="bi bi-exclamation-triangle me-2"></i>Danger Zone</h5>
+    </div>
+    <div class="card-body p-4">
+      <p class="fw-semibold text-danger mb-1">Delete Account</p>
+      <p class="text-muted small mb-3">
+        Permanently deletes your account, favourites and all data. This cannot be undone.
+      </p>
+      <!-- Opens a confirmation modal before actually deleting -->
+      <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+        <i class="bi bi-trash me-2"></i>Delete My Account
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete account confirmation modal ── -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-danger fw-bold" id="deleteModalLabel">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Account
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted mb-3">
+          This will permanently delete your account, favourites and all your reviews.
+          Enter your password to confirm.
+        </p>
+        <form method="POST" action="{{ url_for('delete_account') }}">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Confirm Password</label>
+            <input type="password" name="confirm_delete_password"
+                   class="form-control" placeholder="Enter your password" required>
+          </div>
+          <div class="d-flex gap-2 justify-content-end mt-4">
+            <button type="button" class="btn thr-btn-outline" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-danger">
+              <i class="bi bi-trash me-2"></i>Yes, Delete Forever
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='settings.js') }}"></script>
 {% endblock %}
