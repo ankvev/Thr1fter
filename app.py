@@ -746,7 +746,3 @@ def admin_delete_store(store_id):
 
     flash(f'Store "{name}" has been deleted.', 'success')
     return redirect(url_for('admin'))
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
